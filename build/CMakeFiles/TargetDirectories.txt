@@ -1,0 +1,3 @@
+/iot-industrial-honeypot-soc/build/CMakeFiles/iot_honeypot_server.dir
+/iot-industrial-honeypot-soc/build/CMakeFiles/edit_cache.dir
+/iot-industrial-honeypot-soc/build/CMakeFiles/rebuild_cache.dir

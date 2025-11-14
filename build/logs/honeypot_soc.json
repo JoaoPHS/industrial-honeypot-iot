@@ -1,0 +1,31 @@
+[
+  {
+    "timestamp": "Fri Nov 14 13:38:52 2025",
+    "event_type": "COAP_REQUEST",
+    "client_ip": "127.0.0.1",
+    "resource": "/admin/credentials",
+    "message": "CoAP Request Received"
+  },
+  {
+    "timestamp": "Fri Nov 14 13:38:52 2025",
+    "event_type": "ATTACK_DETECTED",
+    "client_ip": "127.0.0.1",
+    "attack_type": "ADMIN_ACCESS_ATTEMPT",
+    "severity": "HIGH",
+    "message": "Possible Attack Detected: " + attack_type + ""
+  },
+  {
+    "timestamp": "Fri Nov 14 13:39:32 2025",
+    "event_type": "MODBUS_CONNECTION",
+    "client_ip": "127.0.0.1",
+    "port": 33224,
+    "message": "Modbus connection established"
+  },
+  {
+    "timestamp": "Fri Nov 14 13:39:32 2025",
+    "event_type": "AUTH_ATTEMPT",
+    "client_ip": "127.0.0.1",
+    "protocol": "MODBUS",
+    "status": "SUCCESS",
+    "message": "Authentication Attempt " + status + ""
+  },

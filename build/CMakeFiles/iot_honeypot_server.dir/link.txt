@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/iot_honeypot_server.dir/server/src/main.cpp.o CMakeFiles/iot_honeypot_server.dir/server/src/modbus_server.cpp.o CMakeFiles/iot_honeypot_server.dir/server/src/coap_server.cpp.o CMakeFiles/iot_honeypot_server.dir/server/src/soc_logger.cpp.o -o iot_honeypot_server  /usr/lib/x86_64-linux-gnu/libboost_system.so.1.74.0 -lpthread 

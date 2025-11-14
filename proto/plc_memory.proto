@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package iot.honeypot;
+
+message PLCMemory {
+    // Input Area - Physical bits
+    bytes input_region = 1; 
+    
+    // Output Area - Physical bits  
+    bytes output_region = 2;
+    
+    // Working Memory Area (Volatile)
+    map<string, uint32> work_memory = 3;        
+    
+    // Retentive Memory Area (Non-volatile)
+    map<string, uint32> retentive_memory = 4;   
+    
+     // Register Area (DWords)
+    map<string, uint32> data_registers = 5;     
+    
+    // Timers and Counters 
+    message TimerCounter {
+        uint32 preset_value = 1;
+        uint32 current_value = 2;
+        bool enabled = 3;
+    }
+    
+    map<string, TimerCounter> timers = 6;
+    map<string, TimerCounter> counters = 7;
+}
