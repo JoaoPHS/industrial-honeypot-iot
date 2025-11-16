@@ -1,4 +1,4 @@
-# IIoT Industrial Honeypot v1.0 
+# Industrial Honeypot IIoT v1.0 
 
 ![C++](https://img.shields.io/badge/C++-17-blue.svg)
 ![Boost-Asio](https://img.shields.io/badge/Boost-Asio-green.svg)
