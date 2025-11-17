@@ -205,7 +205,7 @@ done
 ```
 
 
-📁 Project Scope
+# 📁 Project Scope
 
 ```bash
 industrial-honeypot-iot/
