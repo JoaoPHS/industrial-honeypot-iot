@@ -15,14 +15,14 @@
 
 # 📋Index
 
-- [Overview](index.html#overview)
-- [Features](#features)
-- [Installation](#installation)
-- [How to Use](#how-to-use)
-- [Project Scope](#project-scope)
-- [Technologies](#technologies)
-- [Contribution](#contribution)
-- [License](#license)
+- [Overview](https://github.com/JoaoPHS/industrial-honeypot-iot/blob/main/README.md#-overview)
+- [Features](https://github.com/JoaoPHS/industrial-honeypot-iot/blob/main/README.md#-features)
+- [Installation](https://github.com/JoaoPHS/industrial-honeypot-iot/blob/main/README.md#-installation)
+- [How to Use](https://github.com/JoaoPHS/industrial-honeypot-iot/blob/main/README.md#-how-to-use)
+- [Project Scope](https://github.com/JoaoPHS/industrial-honeypot-iot/blob/main/README.md#-project-scope)
+- [Technologies](https://github.com/JoaoPHS/industrial-honeypot-iot/blob/main/README.md#%EF%B8%8F-technologies)
+- [Contribution](https://github.com/JoaoPHS/industrial-honeypot-iot/blob/main/README.md#-contribution)
+- [License](https://github.com/JoaoPHS/industrial-honeypot-iot/blob/main/README.md#-license)
 
 ## 🎯 Overview
 
