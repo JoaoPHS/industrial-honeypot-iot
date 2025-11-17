@@ -1,14 +1,21 @@
+<div align="center">
+
+<img width="800" height="912" alt="honeypot1" src="https://github.com/user-attachments/assets/c0cb0619-a49c-4f98-aed0-24bb242cef80" />
+
+</div>
+
 # Industrial Honeypot IIoT v1.0 
 
 ![C++](https://img.shields.io/badge/C++-17-blue.svg)
 ![Boost-Asio](https://img.shields.io/badge/Boost-Asio-green.svg)
 ![Linux/Rasp](https://img.shields.io/badge/Platform-Linux/RaspberryPi-orange.svg)
 ![License-MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Docker](https://img.shields.io/badge/Container-Docker-blue.svg)
 
 
-📋Index
+# 📋Index
 
-- [Overview](#overview)
+- [Overview](index.html#overview)
 - [Features](#features)
 - [Installation](#installation)
 - [How to Use](#how-to-use)
@@ -69,8 +76,7 @@ A highly interactive honeypot for detecting attacks on critical industrial infra
 ### ⚙️ Debug Server and Test Mode
 
 - Configurable debug server file created in the src subdirectory if you want to configure or test new features on the server
-- Test directory created if you want to add new features and test them in isolation
-
+- 
 ## 🚀 Installation
 
 ### 📋 Prerequisites
@@ -119,6 +125,8 @@ libboost-system-dev \
 libboost-thread-dev
 
 # Compile normally
+rm -rf * 
+  or (If that doesn't work, follow the procedure below)
 mkdir build && cd build
 cmake .. && make
 ./iot_honeypot_server
@@ -156,5 +164,176 @@ echo "SCAN" | nc -u 127.0.0.1 5683 -w 1
 # With socat (recommended)
 echo "TEST" | socat - UDP:localhost:5683
 ```
+### 📊 Detailed Mode
 
-# UNDER CONSTRUCTION...
+#### The server operates in detailed mode by default, displaying:
+
+- >>>>> Established connections
+- >>>>>> Received requests
+- >>>>>>> Detected attacks
+- >>>>>>>> Real-time statistics
+
+### ⚙️ Advanced Settings
+
+#### Custom Ports:
+
+```cpp
+// In main.cpp
+ModbusServer modbus_server(io_context, 1502); // Alternative port
+CoAPServer coap_server(io_context, 15683); // Alternative port
+```
+Custom Logging:
+
+```cpp
+// Initialize with custom file
+SOCLogger::initialize("custom_logs.json");
+```
+
+### 💾 Exporting Data
+
+#### Logs are automatically saved to:
+
+```bash
+build/logs/honeypot_soc.json
+```
+#### For SIEM integration:
+
+```bash
+# Example: Send to Elasticsearch tail -f logs/honeypot_soc.json | while read line; of 
+curl -X POST elasticsearch:9200/honeypot/_doc -H "Content-Type: application/json" -d "$line"
+done
+```
+
+```bash
+📁 Project Scope
+
+industrial-honeypot-iot/
+├── 📁 server/
+│    ├── 📁 include/
+│    │    ├── 🏗️ modbus_server.h
+│    │    ├── 📡 coap_server.h
+│    │    └️ 📊 soc_logger.h
+│    └── 📁 src/
+│         ├── 🎯 main.cpp
+│         ├── ⚙️ debug_server.cpp
+│         ├── 🔧 modbus_server.cpp
+│         ├️ 📡 coap_server.cpp
+│         └️ 📊 soc_logger.cpp
+├── 📁 configs
+│    └── ⚙️ simulated_plcs.pb
+├── 📁 build/ <<< (Contains CMake/Makefile compilation files)
+│    └── 📁 logs/
+│        └️ 📄 honeypot_soc.json
+├── 📁 docker/
+│     └️ 🐳 Dockerfile
+├── 📁 proto/
+│     ├── 🔩 plc_memory.pb.cc
+│     ├── 🪛 plc_memory.pb.h
+│     └️ plc_memory.proto
+├── 📁 utils/
+│     ├── ⚙️ generate_plc_config
+│     ├── ⚙️ generate_plc_config.cpp
+│     └️ ⚙️ generate_simple.cpp
+├── 🔩 plc_memory.pb.cc >>> (PLC Reserve in C if you want to make modifications without affecting the main file in the proto folder)
+├── 🪛 plc_memory.pb.h >>> (PLC Header.cc file interface reservation same purpose)
+└️🛠️ CMakeLists.txt
+```
+## 🏗️ Architecture
+
+- main.cpp: Main orchestrator and initializer
+- modbus_server.cpp: Modbus TCP server
+- coap_server.cpp: CoAP UDP server
+- soc_logger.cpp: JSON structured logging system
+- Dockerfile: Containerization for deployment
+
+## 🛠️ Technologies
+
+### 💻 Stack
+
+- C++17: Language for maximum performance
+- Boost.Asio: Asynchronous I/O and network programming
+- CMake: Cross-platform build system
+- Docker: Containerization and deployment
+
+## 📚 Main Libraries
+
+#### C++:
+
+- Boost 1.66+ (Asio, System, Thread)
+- Standard Template Library (STL)
+- POSIX Sockets API
+
+### 🏛️ Architecture (Development)
+
+- Reactor Pattern: I/O Asynchronous with Boost.Asio
+- Singleton: Logging Management
+- RAII: Automatic Resource Management
+- Callback-based: Asynchronous Handlers for Network
+
+## ⚡ Optimizations
+
+- Compilation with O2 optimizations
+- Intelligent buffering for logging
+- Connection and socket reuse
+- Efficient memory allocation
+
+🤝 Contribution
+📝 How to Help
+Fork the project
+
+#### Create a Branch:
+
+```bash
+git checkout -b feature/new-feature
+```
+#### Commit your Changes:
+
+```bash
+git commit -m 'Add feature'
+```
+#### Push to the Branch:
+
+```bash
+git push origin feature/new-feature
+```
+#### Open a Pull Request
+
+## 🎯 Areas for Improvement
+
+- New industrial protocols (BACnet, DNP3)
+- Real-time web dashboard accessing the agent via REST/WSS (cpp-httplib)
+- MQTT deployment
+- More attack pattern detections
+- Support for more architectures (ARM64)
+- Integration with threat intelligence APIs
+
+## 📋 Guidelines
+
+- Follow the C++17 coding standard
+- Maintain compatibility with Linux
+- Document new features
+- Add tests for new features
+
+## 📄 License
+
+- Distributed under the [MIT license](https://opensource.org/license/mit). See LICENSE for more information.
+- Free permission to use, copy, modify and distribute this software.
+
+[Copyright (c) 2025 João Pedro](https://www.linkedin.com/in/jo%C3%A3o-pedro-h-1a8000345/)
+
+## ⚖️ Disclaimer
+
+### 🚨 Legal Notice
+
+- This software is provided as is, without warranties of any kind
+- Designed for testing and research environments only
+- NOT recommended for use in production networks
+- Users are entirely responsible for proper use
+- No support for deployment in critical infrastructures
+- Use at your own risk
+
+<div align="center">
+
+🐻 "It's always good to have a honeypot for an invading bear" 🍯
+
+</div>
