@@ -278,9 +278,11 @@ industrial-honeypot-iot/
 - Connection and socket reuse
 - Efficient memory allocation
 
-🤝 Contribution
-📝 How to Help
-Fork the project
+## 🤝 Contribution
+
+### 📝 How to Help
+
+Fork the project:
 
 #### Create a Branch:
 
