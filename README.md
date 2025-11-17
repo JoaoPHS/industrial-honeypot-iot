@@ -204,9 +204,10 @@ curl -X POST elasticsearch:9200/honeypot/_doc -H "Content-Type: application/json
 done
 ```
 
-```bash
+
 📁 Project Scope
 
+```bash
 industrial-honeypot-iot/
 ├── 📁 server/
 │    ├── 📁 include/
