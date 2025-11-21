@@ -76,7 +76,7 @@ A highly interactive honeypot for detecting attacks on critical industrial infra
 ### ⚙️ Debug Server and Test Mode
 
 - Configurable debug server file created in the src subdirectory if you want to configure or test new features on the server
-- 
+  
 ## 🚀 Installation
 
 ### 📋 Prerequisites
