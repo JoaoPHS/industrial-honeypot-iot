@@ -3,6 +3,8 @@
 
 #include <boost/asio.hpp>
 #include <array>
+#include <vector>
+#include <string>
 
 class CoAPServer {
 public:
@@ -14,7 +16,12 @@ private:
     boost::asio::io_context& io_context_;
     boost::asio::ip::udp::socket socket_;
     boost::asio::ip::udp::endpoint remote_endpoint_;
-    std::array<char, 1024> recv_buffer_;
+    
+    // Larger buffer for better performance
+    std::array<char, 2048> recv_buffer_;
+    
+    // Pre-allocated resource strings
+    static const std::vector<std::string> resources_;
 };
 
 #endif // COAP_SERVER_H

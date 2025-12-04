@@ -1,0 +1,49 @@
+# Build artifacts
+build/
+*.o
+*.a
+*.so
+*.exe
+*.out
+iot_honeypot_server
+
+# Logs
+logs/
+*.log
+*.json
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Docker
+.dockerignore
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
+
+# Protobuf generated (se não forem necessários)
+*.pb.cc
+*.pb.h
+
+# OS specific
+Thumbs.db
+desktop.ini
+
+# Test outputs
+test_output/
+temp/
+

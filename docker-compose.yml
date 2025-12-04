@@ -1,0 +1,22 @@
+services:
+  honeypot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: industrial-honeypot
+    ports:
+      - "502:502"      # Modbus TCP
+      - "5683:5683/udp" # CoAP UDP
+      - "1883:1883"    # MQTT TCP
+      - "8080:8080"    # REST API Dashboard
+    volumes:
+      - ./build/logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - honeypot-network
+
+networks:
+  honeypot-network:
+    driver: bridge
+
+
