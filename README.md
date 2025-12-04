@@ -53,7 +53,7 @@
 - Buffer is automatically emptied on `shutdown()`
 - Memory is pre-allocated on `initialize()` with `reserve()`
 
-  #### What impact do these changes have on the project?
+#### What impact do these changes have on the project?
 
 - 80-90% reduction in disk I/O operations
 - Lower latency in logging operations
