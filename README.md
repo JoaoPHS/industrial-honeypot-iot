@@ -4,7 +4,7 @@
 
 </div>
 
-# 🍯 Industrial Honeypot IIoT v1.0 🍯
+# 🍯 Industrial Honeypot IIoT v1.0 (V2.0 coming soon -> readme is under construction)🍯
 
 ![C++](https://img.shields.io/badge/C++-17-blue.svg)
 ![Boost-Asio](https://img.shields.io/badge/Boost-Asio-green.svg)
