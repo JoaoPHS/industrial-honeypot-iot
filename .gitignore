@@ -10,7 +10,10 @@ iot_honeypot_server
 # Logs
 logs/
 *.log
-*.json
+
+# IMPORTANT: Keep honeypot_soc.json as example
+# but exclude from commits
+**/honeypot_soc.json
 
 # CMake
 CMakeCache.txt

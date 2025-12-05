@@ -39,7 +39,8 @@ set(SERVER_SOURCES
     server/src/coap_server.cpp
     server/src/mqtt_server.cpp
     server/src/rest_api.cpp
-    server/src/soc_logger.cpp  
+    server/src/soc_logger.cpp
+    server/src/security.cpp
 )
 
 add_executable(iot_honeypot_server ${SERVER_SOURCES})
