@@ -60,6 +60,15 @@
 - Improved overall server performance
 - Thread-safe for concurrent environments
 
+### Optimizations ARM64
+
+- Equivalent to `-march=native` for ARM architecture
+- Optimizes for specific ARM processors (Cortex-A, Neoverse)
+
+#### What impact do these changes have on the project?
+
+- Expected gain: 15-20% in ARM
+
 ---
 
 (Under construction...)
