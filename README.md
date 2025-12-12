@@ -21,7 +21,7 @@
 - 30-40% reduction in log construction time
 - Improved memory usage during logging operations
 
-#### What impact do these changes have on the project?
+#### 🤔 What impact do these changes have on the project?
 
 - Reduces temporary allocations
 - Improves log construction performance
@@ -36,7 +36,7 @@
 - 50-70% reduction in IP validation time under high load
 - Regex compiled only once and reused in all calls
 
-#### What impact do these changes have on the project?
+#### 🤔 What impact do these changes have on the project?
 
 - Modbus Server: for each new TCP connection (port 502)
 - CoAP Server: for each received UDP packet (port 5683)
@@ -51,7 +51,7 @@
 - Architecture-specific optimizations with `-march=native`
 - Debug mode retains O0 to facilitate debugging
 
-#### What impact do these changes have on the project?
+#### 🤔 What impact do these changes have on the project?
 
 - 20-30% performance improvement in I/O operations
 - Reduced binary size with LTO
@@ -80,7 +80,7 @@
 - Buffer is automatically emptied on `shutdown()`
 - Memory is pre-allocated on `initialize()` with `reserve()`
 
-#### What impact do these changes have on the project?
+#### 🤔 What impact do these changes have on the project?
 
 - 80-90% reduction in disk I/O operations
 - Lower latency in logging operations
@@ -92,7 +92,7 @@
 - Equivalent to `-march=native` for ARM architecture
 - Optimizes for specific ARM processors (Cortex-A, Neoverse)
 
-#### What impact do these changes have on the project?
+#### 🤔 What impact do these changes have on the project?
 
 - Expected gain: 15-20% in ARM
 
