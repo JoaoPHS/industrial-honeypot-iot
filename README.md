@@ -26,7 +26,7 @@
 - Reduces temporary allocations
 - Improves log construction performance
 - Reduces temporary memory usage
-- - Decreases logging latency
+- Decreases logging latency
 - Improves scalability under high load
 
 ### ⚙️ Statically Compiled Regex
