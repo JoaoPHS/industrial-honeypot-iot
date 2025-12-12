@@ -1,6 +1,7 @@
 #include "mqtt_server.h"
 #include "soc_logger.h"
 #include "rest_api.h"
+#include "security.h"
 #include <boost/asio.hpp>
 #include <iostream>
 #include <cstring>
@@ -34,8 +35,17 @@ void MQTTServer::start_accept() {
     
     acceptor_.async_accept(*socket, [this, socket](boost::system::error_code ec) {
         if (!ec) {
-            std::string client_ip = socket->remote_endpoint().address().to_string();
-            uint16_t port = socket->remote_endpoint().port();
+            std::string client_ip;
+            uint16_t port = 0;
+            try {
+                client_ip = socket->remote_endpoint().address().to_string();
+                port = socket->remote_endpoint().port();
+                if (!Security::is_valid_ip(client_ip)) {
+                    client_ip = "INVALID_IP";
+                }
+            } catch (const std::exception& e) {
+                client_ip = "UNKNOWN";
+            }
             
             std::cout << "MQTT: Connection from " << client_ip << ":" << port << std::endl;
             SOCLogger::log_mqtt_activity(client_ip, "connection", "CONNECT");
@@ -47,17 +57,29 @@ void MQTTServer::start_accept() {
 }
 
 void MQTTServer::handle_client(std::shared_ptr<tcp::socket> socket) {
+    constexpr size_t MAX_BUFFER_SIZE = 10240;
     auto buffer = std::make_shared<std::vector<char>>(1024);
     
     socket->async_read_some(boost::asio::buffer(*buffer), 
         [this, socket, buffer](boost::system::error_code ec, std::size_t length) {
             if (!ec) {
-                std::string client_ip = socket->remote_endpoint().address().to_string();
-                std::string data(buffer->data(), length);
+                if (!Security::is_safe_buffer_size(length, MAX_BUFFER_SIZE)) {
+                    return;
+                }
                 
+                std::string client_ip;
+                try {
+                    client_ip = socket->remote_endpoint().address().to_string();
+                    if (!Security::is_valid_ip(client_ip)) {
+                        client_ip = "INVALID_IP";
+                    }
+                } catch (const std::exception& e) {
+                    client_ip = "UNKNOWN";
+                }
+                
+                std::string data(buffer->data(), length);
                 process_mqtt_packet(socket, data, client_ip);
                 
-                // Continue reading
                 handle_client(socket);
             }
         });
@@ -87,19 +109,21 @@ void MQTTServer::process_mqtt_packet(std::shared_ptr<tcp::socket> socket,
             }
             break;
             
-        case 3: // PUBLISH
+        case 3:
             action = "PUBLISH";
-            // Extract topic from packet (simplified)
             if (data.length() > 4) {
                 size_t topic_len = (static_cast<uint8_t>(data[2]) << 8) | static_cast<uint8_t>(data[3]);
-                if (data.length() >= 4 + topic_len) {
-                    topic = data.substr(4, topic_len);
+                if (topic_len > 65535 || data.length() < 4 + topic_len) {
+                    SOCLogger::log_attack_with_severity(client_ip, "MQTT_MALFORMED_PACKET", "HIGH");
+                    RestAPI::increment_attacks();
+                    return;
                 }
+                topic = data.substr(4, topic_len);
+                topic = Security::sanitize_for_log(topic);
             }
             SOCLogger::log_mqtt_activity(client_ip, topic, action);
             RestAPI::increment_mqtt_activities();
             
-            // Detect suspicious topics
             if (topic.find("admin") != std::string::npos || 
                 topic.find("credentials") != std::string::npos) {
                 SOCLogger::log_attack_with_severity(client_ip, "MQTT_ADMIN_TOPIC_ACCESS", "HIGH");
@@ -107,25 +131,26 @@ void MQTTServer::process_mqtt_packet(std::shared_ptr<tcp::socket> socket,
             }
             break;
             
-        case 8: // SUBSCRIBE
+        case 8:
             action = "SUBSCRIBE";
-            // Extract topic from packet (simplified)
             if (data.length() > 6) {
                 size_t topic_len = (static_cast<uint8_t>(data[4]) << 8) | static_cast<uint8_t>(data[5]);
-                if (data.length() >= 6 + topic_len) {
-                    topic = data.substr(6, topic_len);
+                if (topic_len > 65535 || data.length() < 6 + topic_len) {
+                    SOCLogger::log_attack_with_severity(client_ip, "MQTT_MALFORMED_PACKET", "HIGH");
+                    RestAPI::increment_attacks();
+                    return;
                 }
+                topic = data.substr(6, topic_len);
+                topic = Security::sanitize_for_log(topic);
             }
             SOCLogger::log_mqtt_activity(client_ip, topic, action);
             RestAPI::increment_mqtt_activities();
             
-            // Send SUBACK
             {
                 unsigned char suback[] = {0x90, 0x03, (unsigned char)data[2], (unsigned char)data[3], 0x00};
                 boost::asio::write(*socket, boost::asio::buffer(suback, 5));
             }
             
-            // Detect wildcard subscriptions
             if (topic.find("#") != std::string::npos || topic.find("+") != std::string::npos) {
                 SOCLogger::log_attack_with_severity(client_ip, "MQTT_WILDCARD_SUBSCRIPTION", "MEDIUM");
                 RestAPI::increment_attacks();

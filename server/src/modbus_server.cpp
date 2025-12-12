@@ -1,8 +1,12 @@
 #include "modbus_server.h"
 #include "soc_logger.h"
 #include "rest_api.h"
+#include "security.h"
 #include <boost/asio.hpp>
 #include <iostream>
+#include <random>
+#include <mutex>
+#include <chrono>
 
 // ✅ Use namespaces to avoid 'TCP' errors.
 using boost::asio::ip::tcp;
@@ -49,17 +53,24 @@ std::shared_ptr<std::vector<char>> ModbusServer::get_buffer() {
     return buffer;
 }
 
-// Return buffer to pool for reuse
 void ModbusServer::return_buffer(std::shared_ptr<std::vector<char>> buffer) {
     std::lock_guard<std::mutex> lock(buffer_pool_mutex_);
     
-    // Only keep buffer if pool is not full
+    static std::chrono::steady_clock::time_point last_cleanup = std::chrono::steady_clock::now();
+    auto now = std::chrono::steady_clock::now();
+    
+    if (std::chrono::duration_cast<std::chrono::minutes>(now - last_cleanup).count() >= 5) {
+        while (buffer_pool_.size() > MAX_POOL_SIZE / 2) {
+            buffer_pool_.pop();
+        }
+        last_cleanup = now;
+    }
+    
     if (buffer_pool_.size() < MAX_POOL_SIZE) {
         buffer->clear();
         buffer->resize(BUFFER_SIZE);
         buffer_pool_.push(std::move(buffer));
     }
-    // Otherwise, buffer will be destroyed automatically
 }
 
 void ModbusServer::start_accept() {
@@ -72,14 +83,29 @@ void ModbusServer::start_accept() {
             // Apply socket optimizations
             setup_socket_options(socket);
             
-            // LOG: Modbus new connection
-            std::string client_ip = socket->remote_endpoint().address().to_string();
-            uint16_t port = socket->remote_endpoint().port();
+            std::string client_ip;
+            uint16_t port = 0;
+            try {
+                client_ip = socket->remote_endpoint().address().to_string();
+                port = socket->remote_endpoint().port();
+                if (!Security::is_valid_ip(client_ip)) {
+                    client_ip = "INVALID_IP";
+                }
+            } catch (const std::exception& e) {
+                client_ip = "UNKNOWN";
+            }
+            
             SOCLogger::log_modbus_connection(client_ip, port);
             RestAPI::increment_modbus_connections();
             
-            // Simulate authentication (demonstration)
-            bool auth_success = (rand() % 2) == 0;
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            static std::mutex rand_mutex;
+            bool auth_success = [&]() {
+                std::lock_guard<std::mutex> lock(rand_mutex);
+                std::uniform_int_distribution<> dis(0, 1);
+                return dis(gen) == 0;
+            }();
             SOCLogger::log_auth_attempt(client_ip, "MODBUS", auth_success);
             
             // If authentication fails, it simulates an attack
@@ -101,9 +127,21 @@ void ModbusServer::handle_client(std::shared_ptr<tcp::socket> socket) {
     socket->async_read_some(boost::asio::buffer(*buffer), 
         [this, socket, buffer](boost::system::error_code ec, std::size_t length) {
             if (!ec) {
-                std::string client_ip = socket->remote_endpoint().address().to_string();
+                if (!Security::is_safe_buffer_size(length, BUFFER_SIZE)) {
+                    return_buffer(buffer);
+                    return;
+                }
                 
-                // Enhanced attack pattern detection
+                std::string client_ip;
+                try {
+                    client_ip = socket->remote_endpoint().address().to_string();
+                    if (!Security::is_valid_ip(client_ip)) {
+                        client_ip = "INVALID_IP";
+                    }
+                } catch (const std::exception& e) {
+                    client_ip = "UNKNOWN";
+                }
+                
                 if (length > 512) {
                     SOCLogger::log_attack_with_severity(client_ip, "MODBUS_BUFFER_OVERFLOW_ATTEMPT", "CRITICAL");
                     RestAPI::increment_attacks();

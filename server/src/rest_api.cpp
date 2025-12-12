@@ -1,4 +1,5 @@
 #include "rest_api.h"
+#include "security.h"
 #include <boost/asio.hpp>
 #include <iostream>
 #include <sstream>
@@ -36,11 +37,33 @@ void RestAPI::start_accept() {
 }
 
 void RestAPI::handle_client(std::shared_ptr<tcp::socket> socket) {
-    auto buffer = std::make_shared<std::vector<char>>(4096);
+    std::string client_ip;
+    try {
+        client_ip = socket->remote_endpoint().address().to_string();
+        if (!Security::is_valid_ip(client_ip)) {
+            socket->close();
+            return;
+        }
+    } catch (const std::exception& e) {
+        socket->close();
+        return;
+    }
+    
+    if (!Security::check_rate_limit(client_ip, 60)) {
+        socket->close();
+        return;
+    }
+    
+    constexpr size_t MAX_BUFFER_SIZE = 4096;
+    auto buffer = std::make_shared<std::vector<char>>(MAX_BUFFER_SIZE);
     
     socket->async_read_some(boost::asio::buffer(*buffer), 
         [this, socket, buffer](boost::system::error_code ec, std::size_t length) {
             if (!ec) {
+                if (!Security::is_safe_buffer_size(length, MAX_BUFFER_SIZE)) {
+                    socket->close();
+                    return;
+                }
                 std::string request(buffer->data(), length);
                 process_http_request(socket, request);
             }
@@ -49,10 +72,16 @@ void RestAPI::handle_client(std::shared_ptr<tcp::socket> socket) {
 
 void RestAPI::process_http_request(std::shared_ptr<tcp::socket> socket,
                                    const std::string& request) {
-    // Parse HTTP request
     std::istringstream request_stream(request);
     std::string method, path, version;
     request_stream >> method >> path >> version;
+    
+    if (method.length() > 10 || path.length() > 2048 || version.length() > 20) {
+        socket->close();
+        return;
+    }
+    
+    path = Security::sanitize_path(path);
     
     std::cout << "REST API: " << method << " " << path << std::endl;
     
@@ -256,7 +285,10 @@ std::string RestAPI::generate_http_response(const std::string& content_type,
     response << "HTTP/1.1 200 OK\r\n"
              << "Content-Type: " << content_type << "\r\n"
              << "Content-Length: " << body.length() << "\r\n"
-             << "Access-Control-Allow-Origin: *\r\n"
+             << "X-Content-Type-Options: nosniff\r\n"
+             << "X-Frame-Options: DENY\r\n"
+             << "X-XSS-Protection: 1; mode=block\r\n"
+             << "Access-Control-Allow-Origin: http://localhost:8080\r\n"
              << "Connection: close\r\n"
              << "\r\n"
              << body;

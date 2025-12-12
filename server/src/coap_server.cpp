@@ -1,9 +1,11 @@
 #include "coap_server.h"
 #include "soc_logger.h"
 #include "rest_api.h"
+#include "security.h"
 #include <boost/asio.hpp>
 #include <iostream>
-#include <cstdlib>
+#include <random>
+#include <mutex>
 #include <iomanip>
 #include <map>
 
@@ -43,8 +45,22 @@ void CoAPServer::start_receive() {
         boost::asio::buffer(recv_buffer_), remote_endpoint_,
         [this](boost::system::error_code ec, std::size_t bytes_recvd) {
             if (!ec && bytes_recvd > 0) {
-                std::string client_ip = remote_endpoint_.address().to_string();
-                uint16_t client_port = remote_endpoint_.port();
+                if (!Security::is_safe_buffer_size(bytes_recvd, recv_buffer_.size())) {
+                    start_receive();
+                    return;
+                }
+                
+                std::string client_ip;
+                uint16_t client_port = 0;
+                try {
+                    client_ip = remote_endpoint_.address().to_string();
+                    client_port = remote_endpoint_.port();
+                    if (!Security::is_valid_ip(client_ip)) {
+                        client_ip = "INVALID_IP";
+                    }
+                } catch (const std::exception& e) {
+                    client_ip = "UNKNOWN";
+                }
                 
                 std::cout << "📨 CoAP: " << bytes_recvd << " bytes of " 
                          << client_ip << ":" << client_port << std::endl;
@@ -67,8 +83,14 @@ void CoAPServer::start_receive() {
                 }
                 std::cout << "'" << std::endl;
                 
-                // Use pre-allocated resources (no dynamic allocation)
-                const std::string& resource = resources_[rand() % resources_.size()];
+                static std::random_device rd;
+                static std::mt19937 gen(rd());
+                static std::mutex rand_mutex;
+                const std::string& resource = [&]() -> const std::string& {
+                    std::lock_guard<std::mutex> lock(rand_mutex);
+                    std::uniform_int_distribution<size_t> dis(0, resources_.size() - 1);
+                    return resources_[dis(gen)];
+                }();
                 
                 SOCLogger::log_coap_request(client_ip, resource);
                 RestAPI::increment_coap_requests();
@@ -94,13 +116,16 @@ void CoAPServer::start_receive() {
                     RestAPI::increment_attacks();
                 }
                 
-                // Check for rapid fire (potential DDoS)
                 static std::map<std::string, int> request_counter;
-                request_counter[client_ip]++;
-                if (request_counter[client_ip] > 100) {
-                    SOCLogger::log_attack_with_severity(client_ip, "COAP_DDOS_ATTEMPT", "CRITICAL");
-                    RestAPI::increment_attacks();
-                    request_counter[client_ip] = 0;  // Reset counter
+                static std::mutex counter_mutex;
+                {
+                    std::lock_guard<std::mutex> lock(counter_mutex);
+                    request_counter[client_ip]++;
+                    if (request_counter[client_ip] > 100) {
+                        SOCLogger::log_attack_with_severity(client_ip, "COAP_DDOS_ATTEMPT", "CRITICAL");
+                        RestAPI::increment_attacks();
+                        request_counter[client_ip] = 0;
+                    }
                 }
                 
                 // ✅ CoAP Response
