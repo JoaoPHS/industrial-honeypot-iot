@@ -1,6 +1,6 @@
 <div align="center">
-
-<img width="800" height="912" alt="honeypot1" src="https://github.com/user-attachments/assets/c0cb0619-a49c-4f98-aed0-24bb242cef80" />
+  
+<img width="512" height="800" alt="honeypot" src="https://github.com/user-attachments/assets/be209c0b-00e4-4390-9a70-566d74e8575d" />
 
 </div>
 
