@@ -324,7 +324,10 @@ industrial-honeypot-iot/
 │         ├── 🎯 main.cpp
 │         ├── ⚙️ debug_server.cpp
 │         ├── 🔧 modbus_server.cpp
-│         ├️ 📡 coap_server.cpp
+│         ├── 📡 coap_server.cpp
+│         ├── 📡 mqtt_server.cpp
+│         ├── ⚙️ rest_api.cpp
+│         ├── 🔒 security.cpp
 │         └️ 📊 soc_logger.cpp
 ├── 📁 configs
 │    └── ⚙️ simulated_plcs.pb
